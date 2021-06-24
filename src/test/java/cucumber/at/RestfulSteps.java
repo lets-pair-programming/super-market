@@ -1,4 +1,4 @@
-package cucumber.steps;
+package cucumber.at;
 
 import cucumber.util.RestfulHelper;
 import io.cucumber.java.en.Then;
@@ -6,7 +6,6 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import mob.code.supermarket.Application;
 import org.json.JSONException;
-import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.context.SpringBootContextLoader;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,13 +14,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.Assert.assertEquals;
 
 
 @ContextConfiguration(classes = Application.class, loader = SpringBootContextLoader.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(locations = "classpath:acceptance-test/application-test.properties")
 @CucumberContextConfiguration
 public class RestfulSteps {
     @LocalServerPort
