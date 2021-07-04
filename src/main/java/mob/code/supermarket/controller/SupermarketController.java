@@ -39,4 +39,8 @@ public class SupermarketController {
         return rawBarcodeParser.parse(barcodes);
     }
 
+    @PostMapping("printBill")
+    public List<String> printBill(@RequestBody String[] barcodes) {
+        return rawBarcodeParser.print(barcodes);
+    }
 }
