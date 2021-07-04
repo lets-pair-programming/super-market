@@ -3,6 +3,8 @@ package mob.code.supermarket.domain;
 import mob.code.supermarket.legacy.BarcodeReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.ObjectError;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -107,10 +109,19 @@ public class RawBarcodeParser {
     }
 
     private String getUnit(Item itemCode, String count) {
-        if (count.equals("1")) {
-            return "";
-        } else {
+        return getUnit1(itemCode);
+//        if (count.equals("1")) {
+//            return "";
+//        } else {
+//            return "(" + itemCode.getUnit() + ")";
+//        }
+    }
+
+    private String getUnit1(Item itemCode) {
+        if (!StringUtils.isEmpty(itemCode.getUnit())) {
             return "(" + itemCode.getUnit() + ")";
+        } else {
+            return "";
         }
     }
 }
