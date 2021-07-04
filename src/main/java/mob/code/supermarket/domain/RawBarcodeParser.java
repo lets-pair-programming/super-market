@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class RawBarcodeParser {
@@ -41,11 +38,12 @@ public class RawBarcodeParser {
 
     }
 
-    public List<String> print(String[] barcodes) {
+    public List<String> print(String[] barcode) {
+        List<String> barcodes = dealDuplicates(barcode);
         List<BigDecimal> totalPrice = new ArrayList<>();
         List<String> result = new ArrayList<>();
         result.add(itemTitle);
-        Arrays.stream(barcodes).forEach(barCode -> {
+        barcodes.forEach(barCode -> {
             String originCode;
             String count = "1";
             if (barCode.contains("-")) {
@@ -76,6 +74,36 @@ public class RawBarcodeParser {
                 totalPrice.stream().reduce(BigDecimal.ZERO, BigDecimal::add)));
         result.add(billEnd);
         return result;
+    }
+
+    private List<String> dealDuplicates(String[] barcode) {
+        List<String> result = new ArrayList<>();
+        Map<String, Integer> codeMaps = new HashMap<>();
+        for (int i = 0; i < barcode.length; i++) {
+            if (codeMaps.containsKey(barcode[i])) {
+                codeMaps.put(barcode[i], codeMaps.get(barcode[i]) + 1);
+            } else {
+                codeMaps.put(barcode[i], 1);
+            }
+        }
+
+        for (var entry : codeMaps.entrySet()) {
+            result.add(String.format("%s%s", entry.getKey(),
+                    getItemCount(entry.getValue())));
+        }
+        return result;
+    }
+
+    private String getItemCount(Integer value) {
+        String result = "";
+        if (value != 1) {
+            result = String.format("-%s", value);
+        }
+        return result;
+    }
+
+    private String[] dealCodes(String[] barcodes) {
+        return new String[0];
     }
 
     private String getUnit(Item itemCode, String count) {
