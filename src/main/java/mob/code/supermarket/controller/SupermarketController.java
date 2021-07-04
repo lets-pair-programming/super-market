@@ -13,10 +13,11 @@ import java.util.List;
 @RequestMapping("/")
 public class SupermarketController {
     public final ItemRepository itemRepository;
-    private final RawBarcodeParser rawBarcodeParser = new RawBarcodeParser();
+    public final RawBarcodeParser rawBarcodeParser;
 
-    public SupermarketController(ItemRepository itemRepository) {
+    public SupermarketController(ItemRepository itemRepository, RawBarcodeParser rawBarcodeParser) {
         this.itemRepository = itemRepository;
+        this.rawBarcodeParser = rawBarcodeParser;
     }
 
     @GetMapping("ping")
@@ -40,7 +41,7 @@ public class SupermarketController {
     }
 
     @PostMapping("scan")
-    public List<String> printBill(@RequestBody String[] barcodes) {
-        return rawBarcodeParser.print(barcodes);
+    public Response<List<String>> printBill(@RequestBody String[] barcodes) {
+        return Response.of(rawBarcodeParser.print(barcodes));
     }
 }

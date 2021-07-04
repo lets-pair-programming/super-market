@@ -2,17 +2,22 @@ package mob.code.supermarket.domain;
 
 import mob.code.supermarket.legacy.BarcodeReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class RawBarcodeParser {
 
     private final String itemTitle = "****** SuperMarket receipt ******";
     private final String billTitle = "---------------------------------";
     private final String billEnd = "*********************************";
+
     @Autowired
     private ItemRepository itemRepository;
 
@@ -37,7 +42,7 @@ public class RawBarcodeParser {
     }
 
     public List<String> print(String[] barcodes) {
-        List<Double> totalPrice = new ArrayList<>();
+        List<BigDecimal> totalPrice = new ArrayList<>();
         List<String> result = new ArrayList<>();
         result.add(itemTitle);
         Arrays.stream(barcodes).forEach(barCode -> {
@@ -53,11 +58,14 @@ public class RawBarcodeParser {
             Optional<Item> item = itemRepository.findByBarcode(originCode);
             if (item.isPresent()) {
                 Item itemCode = item.get();
-                Double itemTotalPrice = itemCode.getPrice() * Double.parseDouble(count);
+                BigDecimal bl1 = new BigDecimal(count);
+                BigDecimal itemTotalPrice = BigDecimal.valueOf(itemCode.getPrice())
+                        .multiply(bl1).setScale(2, RoundingMode.HALF_UP);
                 totalPrice.add(itemTotalPrice);
-                String strItem = String.format("%s: %s(%s) x %s --- %s"
-                        , itemCode.getName(), count, itemCode.getUnit()
-                        , itemCode.getType(), itemTotalPrice);
+                String strItem = String.format("%s: %s%s x %s --- %s"
+                        , itemCode.getName(), count, getUnit(itemCode, count)
+                        , BigDecimal.valueOf(itemCode.getPrice()).setScale(2, RoundingMode.HALF_UP),
+                        itemTotalPrice);
                 result.add(strItem);
             } else {
                 throw new SupermarketException(String.format("item doesn't exist: %s", originCode));
@@ -65,8 +73,16 @@ public class RawBarcodeParser {
         });
         result.add(billTitle);
         result.add(String.format("total: %s(CNY)",
-                totalPrice.stream().mapToDouble(Double::doubleValue).sum()));
+                totalPrice.stream().reduce(BigDecimal.ZERO, BigDecimal::add)));
         result.add(billEnd);
         return result;
+    }
+
+    private String getUnit(Item itemCode, String count) {
+        if (count.equals("1")) {
+            return "";
+        } else {
+            return "(" + itemCode.getUnit() + ")";
+        }
     }
 }
